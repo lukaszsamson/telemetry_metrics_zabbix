@@ -138,7 +138,8 @@ defmodule TelemetryMetricsZabbixTest do
                         :sys.get_state(pid)
 
                assert data == %{}
-             end) =~ "server could not process 1 out of 1 messages"
+             end) =~
+               "server could not process 1 out of 1 messages. Message keys was: [\"vm.memory.total\"]"
     end
   end
 

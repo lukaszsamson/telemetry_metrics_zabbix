@@ -254,9 +254,9 @@ defmodule TelemetryMetricsZabbix do
 
   defp maybe_schedule_batch_send(reference, _, _), do: reference
 
-  defp send(message, timestamp, %__MODULE__{host: host, port: port}) do
+  defp send(values, timestamp, %__MODULE__{host: host, port: port}) do
     serialized_message =
-      message
+      values
       |> ZabbixSender.Protocol.encode_request(timestamp)
       |> ZabbixSender.Serializer.serialize()
 
@@ -266,7 +266,16 @@ defmodule TelemetryMetricsZabbix do
       Logger.debug("#{__MODULE__}: server processed #{total} messages")
     else
       {:ok, %{failed: failed, total: total}} ->
-        Logger.warn("#{__MODULE__}: server could not process #{failed} out of #{total} messages")
+        keys =
+          values
+          |> Enum.map(fn %{key: key} -> key end)
+          |> Enum.uniq()
+
+        Logger.warn(
+          "#{__MODULE__}: server could not process #{failed} out of #{total} messages. Message keys was: #{
+            inspect(keys, limit: :infinity)
+          }"
+        )
 
       {:error, reason} ->
         Logger.warn("#{__MODULE__}: could not send messages due to #{inspect(reason)}")
