@@ -20,6 +20,15 @@ defmodule TelemetryMetricsZabbix.MixProject do
         main: "readme",
         source_ref: "v#{@version}",
         source_url: @source_url
+      ],
+      dialyzer: [
+        flags: [
+          # :unmatched_returns,
+          :unknown,
+          :error_handling,
+          :race_conditions,
+          :underspecs
+        ]
       ]
     ]
   end
@@ -34,10 +43,11 @@ defmodule TelemetryMetricsZabbix.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:telemetry_metrics, "~> 0.3"},
+      {:telemetry_metrics, "~> 0.5"},
       {:zabbix_sender, "~> 1.0"},
       {:mock, "~> 0.3", only: :test},
-      {:ex_doc, "~> 0.19", only: :dev}
+      {:ex_doc, "~> 0.19", only: :dev},
+      {:dialyxir, "~> 1.0.0", only: [:dev], runtime: false},
     ]
   end
 

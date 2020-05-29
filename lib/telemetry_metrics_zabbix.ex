@@ -84,13 +84,13 @@ defmodule TelemetryMetricsZabbix do
 
   @type t :: %__MODULE__{
           host: String.t(),
-          port: Integer.t(),
+          port: integer(),
           hostname: String.t(),
           timestamping: boolean,
-          batch_window_size: Integer.t(),
+          batch_window_size: integer(),
           data: %{},
           metrics: list(any),
-          batch_timeout: reference
+          batch_timeout: reference | nil
         }
   defstruct [
     :host,
@@ -119,16 +119,6 @@ defmodule TelemetryMetricsZabbix do
     timestamping = Keyword.get(env, :timestamping, @timestamping)
     batch_window_size = Keyword.get(env, :batch_window_size, @batch_window_size)
     hostname = Keyword.get(env, :hostname, "")
-
-    {:ok,
-     %__MODULE__{
-       host: host,
-       port: port,
-       hostname: hostname,
-       timestamping: timestamping,
-       batch_window_size: batch_window_size,
-       data: []
-     }}
 
     Process.flag(:trap_exit, true)
     groups = Enum.group_by(metrics, & &1.event_name)
