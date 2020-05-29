@@ -112,6 +112,7 @@ defmodule TelemetryMetricsZabbix do
   end
 
   @impl true
+  @spec init([Telemetry.Metrics.t()]) :: {:ok, t()}
   def init(metrics) do
     env = Application.get_env(:telemetry_metrics_zabbix, :config, [])
     host = Keyword.get(env, :host, @host)
@@ -124,8 +125,7 @@ defmodule TelemetryMetricsZabbix do
     groups = Enum.group_by(metrics, & &1.event_name)
 
     for {event, metrics} <- groups do
-      id = {__MODULE__, event, self()}
-      :ok = :telemetry.attach(id, event, &handle_event/4, metrics)
+      :ok = :telemetry.attach(get_id(event), event, &handle_event/4, metrics)
     end
 
     {:ok,
@@ -141,14 +141,16 @@ defmodule TelemetryMetricsZabbix do
   end
 
   @impl true
+  @spec terminate(any(), t()) :: :ok
   def terminate(_, %__MODULE__{metrics: metrics}) do
     for event <- metrics do
-      id = {__MODULE__, event, self()}
-      :ok = :telemetry.detach(id)
+      :ok = :telemetry.detach(get_id(event))
     end
 
     :ok
   end
+
+  defp get_id(event), do: {__MODULE__, event, self()}
 
   defp handle_event(_event_name, measurements, metadata, metrics) do
     for metric <- metrics do
@@ -174,6 +176,7 @@ defmodule TelemetryMetricsZabbix do
     end
   end
 
+  @spec keep?(Telemetry.Metrics.t(), map()) :: boolean()
   defp keep?(%{keep: nil}, _metadata), do: true
   defp keep?(metric, metadata), do: metric.keep.(metadata)
 
