@@ -163,15 +163,17 @@ defmodule TelemetryMetricsZabbix do
   defp handle_event(_event_name, measurements, metadata, metrics) do
     for metric <- metrics do
       try do
-        measurement = extract_measurement(metric, measurements)
-        tags = extract_tags(metric, metadata)
+        if keep?(metric, metadata) do
+          measurement = extract_measurement(metric, measurements)
+          tags = extract_tags(metric, metadata)
 
-        key =
-          metric.name
-          |> Kernel.++(tags |> Map.values())
-          |> Enum.map_join(".", &"#{&1}")
+          key =
+            metric.name
+            |> Kernel.++(tags |> Map.values())
+            |> Enum.map_join(".", &"#{&1}")
 
-        report(key, measurement, metric)
+          report(key, measurement, metric)
+        end
       rescue
         e ->
           Logger.error([
@@ -181,6 +183,9 @@ defmodule TelemetryMetricsZabbix do
       end
     end
   end
+
+  defp keep?(%{keep: nil}, _metadata), do: true
+  defp keep?(metric, metadata), do: metric.keep.(metadata)
 
   defp extract_measurement(metric, measurements) do
     case metric.measurement do

@@ -1,5 +1,5 @@
 defmodule TelemetryMetricsZabbixTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
   doctest TelemetryMetricsZabbix
   import Telemetry.Metrics
   import Mock
@@ -248,5 +248,32 @@ defmodule TelemetryMetricsZabbixTest do
                   name: [:vm, :memory, :total]
                 }, 250}
            } = data
+  end
+
+  test "keep/drop is supported" do
+    metrics = [
+      sum("vm.memory.total",
+        tags: [:device],
+        drop: fn metadata ->
+          metadata[:boom] == :pow
+        end
+      )
+    ]
+
+    assert {:ok, pid} = TelemetryMetricsZabbix.start_link(metrics: metrics)
+    :telemetry.execute([:vm, :memory], %{binary: 100, total: 200}, %{device: "dev1"})
+    :telemetry.execute([:vm, :memory], %{binary: 100, total: 250}, %{device: "dev2", boom: :pow})
+
+    assert %TelemetryMetricsZabbix{batch_timeout: bt, data: data} = :sys.get_state(pid)
+    assert is_reference(bt)
+
+    assert %{
+             "vm.memory.total.dev1" =>
+               {%Telemetry.Metrics.Sum{
+                  name: [:vm, :memory, :total]
+                }, 200}
+           } = data
+
+    refute data |> Map.has_key?("vm.memory.total.dev2")
   end
 end
