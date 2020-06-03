@@ -54,23 +54,24 @@ defmodule TelemetryMetricsZabbix do
 
   ### Measuremet to zabbix value conversion
 
-  Measurements are aggregated by event name, measurement and tag values. All those parts are included as Zabbix Sender Protocol key
+  Measurements are aggregated by event name, measurement and tag values. All those parts are included as Zabbix Sender Protocol key.
+  Tag values are treated as Zabbix key parameters sorted by tag key.
 
   #### Example
 
   with metric
 
   ```elixir
-  Telemetry.Metrics.sum("http.request.latency", tags: [:host])
+  Telemetry.Metrics.sum("http.request.latency", tags: [:host, :method])
   ```
 
   and event
 
   ```elixir
-  :telemetry.execute([:http, :request], %{latency: 200}, %{host: "localhost"})
+  :telemetry.execute([:http, :request], %{latency: 200}, %{host: "localhost", method: "GET"})
   ```
 
-  Zabbix key will be `http.request.latency.localhost`
+  Zabbix key will be `http.request.latency["localhost","GET"]`
   """
   require Logger
   use GenServer
@@ -121,7 +122,14 @@ defmodule TelemetryMetricsZabbix do
     batch_window_size = Keyword.get(env, :batch_window_size, @batch_window_size)
     hostname = Keyword.get(env, :hostname, "")
 
+    for metric <- metrics, name_part <- metric.name do
+      unless Regex.match?(~r/^[a-zA-Z0-9_]+$/, "#{name_part}") do
+        raise ArgumentError, message: "invalid metric name #{metric.name}"
+      end
+    end
+
     Process.flag(:trap_exit, true)
+
     groups = Enum.group_by(metrics, & &1.event_name)
 
     for {event, metrics} <- groups do
@@ -161,8 +169,19 @@ defmodule TelemetryMetricsZabbix do
 
           key =
             metric.name
-            |> Kernel.++(tags |> Map.values())
             |> Enum.map_join(".", &"#{&1}")
+
+          tags_stringified = tags
+          |> Enum.sort_by(fn {k, _v} -> k end)
+          |> Enum.map_join(",", fn {_k, value} ->
+            escaped_value = "#{value}" |> String.replace("\"", "\\\"")
+            "\"" <> escaped_value <> "\""
+          end)
+
+          key = case tags_stringified do
+            "" -> key
+            _ -> key <> "[" <> tags_stringified <> "]"
+          end
 
           report(key, measurement, metric)
         end

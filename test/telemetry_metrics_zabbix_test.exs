@@ -239,11 +239,11 @@ defmodule TelemetryMetricsZabbixTest do
     assert is_reference(bt)
 
     assert %{
-             "vm.memory.total.dev1" =>
+             "vm.memory.total[\"dev1\"]" =>
                {%Telemetry.Metrics.Sum{
                   name: [:vm, :memory, :total]
                 }, 200},
-             "vm.memory.total.dev2" =>
+             "vm.memory.total[\"dev2\"]" =>
                {%Telemetry.Metrics.Sum{
                   name: [:vm, :memory, :total]
                 }, 250}
@@ -268,12 +268,12 @@ defmodule TelemetryMetricsZabbixTest do
     assert is_reference(bt)
 
     assert %{
-             "vm.memory.total.dev1" =>
+             "vm.memory.total[\"dev1\"]" =>
                {%Telemetry.Metrics.Sum{
                   name: [:vm, :memory, :total]
                 }, 200}
            } = data
 
-    refute data |> Map.has_key?("vm.memory.total.dev2")
+    refute data |> Map.has_key?("vm.memory.total[\"dev2\"]")
   end
 end

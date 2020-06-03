@@ -54,23 +54,23 @@ Supervisor.start_link(children, opts)
 
 ### Measuremet to zabbix value conversion
 
-Measurements are aggregated by event name, measurement and tag values. All those parts are included as Zabbix Sender Protocol key
+Measurements are aggregated by event name, measurement and tag values. All those parts are included as Zabbix Sender Protocol key. Tag values are treated as Zabbix key parameters sorted by tag key.
 
 #### Example
 
 with metric
 
 ```elixir
-Telemetry.Metrics.sum("http.request.latency", tags: [:host])
+Telemetry.Metrics.sum("http.request.latency", tags: [:host, :method])
 ```
 
 and event
 
 ```elixir
-:telemetry.execute([:http, :request], %{latency: 200}, %{host: "localhost"})
+:telemetry.execute([:http, :request], %{latency: 200}, %{host: "localhost", method: "GET"})
 ```
 
-Zabbix key will be `http.request.latency.localhost`
+Zabbix key will be `http.request.latency["localhost","GET"]`
 
 ## Documentation
 
