@@ -189,7 +189,7 @@ defmodule TelemetryMetricsZabbix do
         e ->
           Logger.error([
             "#{__MODULE__}: could not format metric #{inspect(metric)}\n",
-            Exception.format(:error, e, System.stacktrace())
+            Exception.format(:error, e, __STACKTRACE__)
           ])
       end
     end
