@@ -164,24 +164,26 @@ defmodule TelemetryMetricsZabbix do
     for metric <- metrics do
       try do
         if keep?(metric, metadata) do
-          measurement = extract_measurement(metric, measurements)
+          measurement = extract_measurement(metric, measurements, metadata)
           tags = extract_tags(metric, metadata)
 
           key =
             metric.name
             |> Enum.map_join(".", &"#{&1}")
 
-          tags_stringified = tags
-          |> Enum.sort_by(fn {k, _v} -> k end)
-          |> Enum.map_join(",", fn {_k, value} ->
-            escaped_value = "#{value}" |> String.replace("\"", "\\\"")
-            "\"" <> escaped_value <> "\""
-          end)
+          tags_stringified =
+            tags
+            |> Enum.sort_by(fn {k, _v} -> k end)
+            |> Enum.map_join(",", fn {_k, value} ->
+              escaped_value = "#{value}" |> String.replace("\"", "\\\"")
+              "\"" <> escaped_value <> "\""
+            end)
 
-          key = case tags_stringified do
-            "" -> key
-            _ -> key <> "[" <> tags_stringified <> "]"
-          end
+          key =
+            case tags_stringified do
+              "" -> key
+              _ -> key <> "[" <> tags_stringified <> "]"
+            end
 
           report(key, measurement, metric)
         end
@@ -199,8 +201,9 @@ defmodule TelemetryMetricsZabbix do
   defp keep?(%{keep: nil}, _metadata), do: true
   defp keep?(metric, metadata), do: metric.keep.(metadata)
 
-  defp extract_measurement(metric, measurements) do
+  defp extract_measurement(metric, measurements, metadata) do
     case metric.measurement do
+      fun when is_function(fun, 2) -> fun.(measurements, metadata)
       fun when is_function(fun, 1) -> fun.(measurements)
       key -> measurements[key]
     end

@@ -276,4 +276,30 @@ defmodule TelemetryMetricsZabbixTest do
 
     refute data |> Map.has_key?("vm.memory.total[\"dev2\"]")
   end
+
+  def metadata_measurement(_measurements, metadata) do
+    map_size(metadata)
+  end
+
+  test "can use metadata in the event measurement calculation" do
+    metrics = [
+      sum("vm.memory.total",
+        tags: [:device],
+        measurement: &__MODULE__.metadata_measurement/2
+      )
+    ]
+
+    assert {:ok, pid} = TelemetryMetricsZabbix.start_link(metrics: metrics)
+    :telemetry.execute([:vm, :memory], %{binary: 100, total: 200}, %{device: "dev1", a: 1, b: 3})
+
+    assert %TelemetryMetricsZabbix{batch_timeout: bt, data: data} = :sys.get_state(pid)
+    assert is_reference(bt)
+
+    assert %{
+             "vm.memory.total[\"dev1\"]" =>
+               {%Telemetry.Metrics.Sum{
+                  name: [:vm, :memory, :total]
+                }, 3}
+           } = data
+  end
 end

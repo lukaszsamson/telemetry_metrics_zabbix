@@ -1,7 +1,7 @@
 defmodule TelemetryMetricsZabbix.MixProject do
   use Mix.Project
 
-  @version "0.2.1"
+  @version "0.3.0"
   @source_url "https://github.com/lukaszsamson/telemetry_metrics_zabbix"
 
   def project do
@@ -43,11 +43,11 @@ defmodule TelemetryMetricsZabbix.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:telemetry_metrics, "~> 0.5"},
+      {:telemetry_metrics, "~> 0.6"},
       {:zabbix_sender, "~> 1.0"},
       {:mock, "~> 0.3", only: :test},
       {:ex_doc, "~> 0.19", only: :dev},
-      {:dialyxir, "~> 1.0.0", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.0.0", only: [:dev], runtime: false}
     ]
   end
 
