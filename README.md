@@ -1,6 +1,6 @@
 # TelemetryMetricsZabbix
 
-Provides a Zabbix format reporter and server for Telemetry.Metrics definitions.
+Provides a Zabbix format reporter and server for Telemetry.Metrics definitions. Submits data to Zabbix Trapper Items using Zabbix Sender Protocol. Powered by [zabbix_sender](https://github.com/lukaszsamson/elixir_zabbix_sender).
 
 ## Installation
 
@@ -29,7 +29,7 @@ config :telemetry_metrics_zabbix, :config,
 
 ## Usage
 
-Add `TelemetryMetricsZabbix` to your application supervision tree and pass metrics as a param.
+Add `TelemetryMetricsZabbix` to your application supervision tree and pass metrics as a param. Create a Zabbix Trapper Item on `monitored.host` for every measurement key you want to collect. Set data type on the Trapper Item to Numeric.
 
 ### Example
 
@@ -70,7 +70,11 @@ and event
 :telemetry.execute([:http, :request], %{latency: 200}, %{host: "localhost", method: "GET"})
 ```
 
-Zabbix key will be `http.request.latency["localhost","GET"]`
+Zabbix Trapper key will be `http.request.latency["localhost","GET"]`
+
+## Known isuues
+
+Currently TLS encryption (both PSK and RSA) is not supported by [zabbix_sender](https://github.com/lukaszsamson/elixir_zabbix_sender) and there are no plans for it. A PR would be welcome though.
 
 ## Documentation
 
