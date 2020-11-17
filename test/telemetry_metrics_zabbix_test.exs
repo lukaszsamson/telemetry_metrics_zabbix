@@ -4,6 +4,7 @@ defmodule TelemetryMetricsZabbixTest do
   import Telemetry.Metrics
   import Mock
   import ExUnit.CaptureLog
+  alias ZabbixSender.Serializer
 
   test "starts" do
     assert {:ok, pid} = TelemetryMetricsZabbix.start_link(metrics: [], name: :some_name)
@@ -78,15 +79,15 @@ defmodule TelemetryMetricsZabbixTest do
 
     assert {:ok, pid} = TelemetryMetricsZabbix.start_link(metrics: metrics)
 
-    with_mock ZabbixSender,
+    with_mock ZabbixSender, [:passthrough],
       send: fn msg, "127.0.0.1", 10051 ->
-        {:ok, deserialized} = ZabbixSender.Serializer.deserialize(msg)
+        {:ok, deserialized} = Serializer.deserialize(msg)
 
         assert [%{"clock" => _, "host" => "myhost", "key" => "vm.memory.total", "value" => "1"}] =
                  deserialized["data"]
 
         {:ok,
-         ZabbixSender.Serializer.serialize(%{
+         Serializer.serialize(%{
            response: "success",
            info: "processed: 1; failed: 0; total: 1; seconds spent: 0.000055"
          })}
@@ -116,15 +117,15 @@ defmodule TelemetryMetricsZabbixTest do
 
     assert {:ok, pid} = TelemetryMetricsZabbix.start_link(metrics: metrics)
 
-    with_mock ZabbixSender,
+    with_mock ZabbixSender, [:passthrough],
       send: fn msg, "127.0.0.1", 10051 ->
-        {:ok, deserialized} = ZabbixSender.Serializer.deserialize(msg)
+        {:ok, deserialized} = Serializer.deserialize(msg)
 
         assert [%{"clock" => _, "host" => "myhost", "key" => "vm.memory.total", "value" => "1"}] =
                  deserialized["data"]
 
         {:ok,
-         ZabbixSender.Serializer.serialize(%{
+         Serializer.serialize(%{
            response: "success",
            info: "processed: 0; failed: 1; total: 1; seconds spent: 0.000055"
          })}
@@ -155,9 +156,9 @@ defmodule TelemetryMetricsZabbixTest do
 
     assert {:ok, pid} = TelemetryMetricsZabbix.start_link(metrics: metrics)
 
-    with_mock ZabbixSender,
+    with_mock ZabbixSender, [:passthrough],
       send: fn msg, "127.0.0.1", 10051 ->
-        {:ok, deserialized} = ZabbixSender.Serializer.deserialize(msg)
+        {:ok, deserialized} = Serializer.deserialize(msg)
 
         assert [%{"clock" => _, "host" => "myhost", "key" => "vm.memory.total", "value" => "1"}] =
                  deserialized["data"]

@@ -77,6 +77,8 @@ defmodule TelemetryMetricsZabbix do
   use GenServer
   alias TelemetryMetricsZabbix.Collector
 
+  alias ZabbixSender.Protocol
+
   # Default application values
   @host "127.0.0.1"
   @port 10051
@@ -215,7 +217,7 @@ defmodule TelemetryMetricsZabbix do
   end
 
   defp report(key, value, metric) do
-    GenServer.cast(__MODULE__, {:report, key, value, metric, :erlang.system_time(:seconds)})
+    GenServer.cast(__MODULE__, {:report, key, value, metric, System.system_time(:second)})
   end
 
   @impl true
@@ -242,7 +244,7 @@ defmodule TelemetryMetricsZabbix do
         {:zabbix, :send},
         %__MODULE__{data: data, timestamping: timestamping, hostname: hostname} = state
       ) do
-    batch_timestamp = :erlang.system_time(:seconds)
+    batch_timestamp = System.system_time(:second)
 
     messages =
       data
@@ -250,10 +252,10 @@ defmodule TelemetryMetricsZabbix do
         Collector.extract(metric, value)
         |> Enum.map(fn
           {v, timestamp} ->
-            ZabbixSender.Protocol.value(hostname, key, v, if(timestamping, do: timestamp))
+            Protocol.value(hostname, key, v, if(timestamping, do: timestamp))
 
           v ->
-            ZabbixSender.Protocol.value(hostname, key, v, if(timestamping, do: batch_timestamp))
+            Protocol.value(hostname, key, v, if(timestamping, do: batch_timestamp))
         end)
       end)
 
@@ -275,16 +277,10 @@ defmodule TelemetryMetricsZabbix do
   defp maybe_schedule_batch_send(reference, _, _), do: reference
 
   defp send(values, timestamp, %__MODULE__{host: host, port: port}) do
-    serialized_message =
-      values
-      |> ZabbixSender.Protocol.encode_request(timestamp)
-      |> ZabbixSender.Serializer.serialize()
+    case ZabbixSender.send_values(values, timestamp, host, port) do
+      {:ok, %{failed: 0, total: total}} ->
+        Logger.debug("#{__MODULE__}: server processed #{total} messages")
 
-    with {:ok, response} <- ZabbixSender.send(serialized_message, host, port),
-         {:ok, deserialized} <- ZabbixSender.Serializer.deserialize(response),
-         {:ok, %{failed: 0, total: total}} <- ZabbixSender.Protocol.decode_response(deserialized) do
-      Logger.debug("#{__MODULE__}: server processed #{total} messages")
-    else
       {:ok, %{failed: failed, total: total}} ->
         keys =
           values

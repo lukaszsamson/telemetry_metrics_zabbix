@@ -12,5 +12,5 @@
   "nimble_parsec": {:hex, :nimble_parsec, "1.1.0", "3a6fca1550363552e54c216debb6a9e95bd8d32348938e13de5eda962c0d7f89", [:mix], [], "hexpm", "08eb32d66b706e913ff748f11694b17981c0b04a33ef470e33e11b3d3ac8f54b"},
   "telemetry": {:hex, :telemetry, "0.4.2", "2808c992455e08d6177322f14d3bdb6b625fbcfd233a73505870d8738a2f4599", [:rebar3], [], "hexpm", "2d1419bd9dda6a206d7b5852179511722e2b18812310d304620c7bd92a13fcef"},
   "telemetry_metrics": {:hex, :telemetry_metrics, "0.6.0", "da9d49ee7e6bb1c259d36ce6539cd45ae14d81247a2b0c90edf55e2b50507f7b", [:mix], [{:telemetry, "~> 0.4", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "5cfe67ad464b243835512aa44321cee91faed6ea868d7fb761d7016e02915c3d"},
-  "zabbix_sender": {:hex, :zabbix_sender, "1.0.0", "0d10a027130dc390be109f143b08c80be7dcc6663271053f29a6c3a25b0bb491", [:mix], [{:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm", "9079202afad348ba148f9fe9c6f886dec7cc9b5f1893e4d9fe99c39eae70abe1"},
+  "zabbix_sender": {:hex, :zabbix_sender, "1.1.0", "3a0b158a5d7bd5689ceda56abee9693de8543d79802920d08b6bff7713cdb229", [:mix], [{:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm", "758c2c65a78e198998e4afae3acc5dd26e4bb7805b8e26a9442ed6e55635d69e"},
 }
