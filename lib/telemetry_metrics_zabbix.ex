@@ -134,8 +134,12 @@ defmodule TelemetryMetricsZabbix do
 
     groups = Enum.group_by(metrics, & &1.event_name)
 
+    excape_pattern = :binary.compile_pattern("\"")
+
     for {event, metrics} <- groups do
-      :ok = :telemetry.attach(get_id(event), event, &handle_event/4, metrics)
+      :ok = :telemetry.attach(get_id(event), event, fn _event_name, measurements, metadata, metrics ->
+        handle_event(measurements, metadata, metrics, excape_pattern)
+      end, metrics)
     end
 
     {:ok,
@@ -162,7 +166,7 @@ defmodule TelemetryMetricsZabbix do
 
   defp get_id(event), do: {__MODULE__, event, self()}
 
-  defp handle_event(_event_name, measurements, metadata, metrics) do
+  defp handle_event(measurements, metadata, metrics, escape_pattern) do
     for metric <- metrics do
       try do
         if keep?(metric, metadata) do
@@ -177,7 +181,7 @@ defmodule TelemetryMetricsZabbix do
             tags
             |> Enum.sort_by(fn {k, _v} -> k end)
             |> Enum.map_join(",", fn {_k, value} ->
-              escaped_value = "#{value}" |> String.replace("\"", "\\\"")
+              escaped_value = "#{value}" |> String.replace(escape_pattern, "\\\"")
               "\"" <> escaped_value <> "\""
             end)
 
