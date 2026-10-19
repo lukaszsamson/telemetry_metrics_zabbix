@@ -43,6 +43,7 @@ defmodule TelemetryMetricsZabbix.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:spec_lint, "~> 0.1", only: [:dev, :test], runtime: false},
       {:telemetry_metrics, "~> 0.6"},
       {:zabbix_sender, "~> 1.1"},
       # {:zabbix_sender, path: "~/zabbix_sender"},
