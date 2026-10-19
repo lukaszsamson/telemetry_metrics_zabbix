@@ -291,14 +291,14 @@ defmodule TelemetryMetricsZabbix do
           |> Enum.map(fn %{key: key} -> key end)
           |> Enum.uniq()
 
-        Logger.warn(
+        Logger.warning(
           "#{__MODULE__}: server could not process #{failed} out of #{total} messages. Message keys was: #{
             inspect(keys, limit: :infinity)
           }"
         )
 
       {:error, reason} ->
-        Logger.warn("#{__MODULE__}: could not send messages due to #{inspect(reason)}")
+        Logger.warning("#{__MODULE__}: could not send messages due to #{inspect(reason)}")
     end
   end
 end

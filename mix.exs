@@ -22,11 +22,12 @@ defmodule TelemetryMetricsZabbix.MixProject do
         source_url: @source_url
       ],
       dialyzer: [
+        plt_local_path: "priv/plts",
+        plt_core_path: "priv/plts",
         flags: [
           # :unmatched_returns,
           :unknown,
           :error_handling,
-          :race_conditions,
           :underspecs
         ]
       ]
@@ -43,12 +44,13 @@ defmodule TelemetryMetricsZabbix.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:spec_lint, "~> 0.1", only: [:dev, :test], runtime: false},
       {:telemetry_metrics, "~> 0.6"},
       {:zabbix_sender, "~> 1.1"},
       # {:zabbix_sender, path: "~/zabbix_sender"},
       {:mock, "~> 0.3", only: :test},
       {:ex_doc, "~> 0.19", only: :dev},
-      {:dialyxir, "~> 1.0.0", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
     ]
   end
 
