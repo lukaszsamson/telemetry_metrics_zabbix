@@ -23,3 +23,5 @@ erl_crash.dump
 telemetry_metrics_zabbix-*.tar
 
 .elixir_ls
+
+/priv/plts/

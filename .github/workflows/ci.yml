@@ -25,5 +25,11 @@ jobs:
           key: ${{ runner.os }}-mix-${{ hashFiles('mix.lock') }}
           restore-keys: ${{ runner.os }}-mix-
       - run: mix deps.get
-      - run: mix compile
+      - run: mix compile --warnings-as-errors
       - run: mix spec_lint
+      - uses: actions/cache@v4
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-plts-otp29-elixir1.20.4-${{ hashFiles('mix.lock') }}
+          restore-keys: ${{ runner.os }}-plts-otp29-elixir1.20.4-
+      - run: mix dialyzer --format github
